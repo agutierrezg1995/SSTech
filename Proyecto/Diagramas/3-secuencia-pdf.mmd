@@ -1,0 +1,33 @@
+---
+title: Secuencia — Crear registro + Generar PDF
+---
+sequenceDiagram
+    autonumber
+    participant SISO
+    participant FRONT as SPA (frontend)
+    participant API as Server Express
+    participant DB as data/*.json
+    participant PDF as lib/pdf.js + Chrome
+
+    SISO->>FRONT: Nuevo registro
+    FRONT->>FRONT: inicialData(esquema)
+    FRONT->>FRONT: renderForm() (formulario dinámico)
+
+    loop Diligenciamiento
+        SISO->>FRONT: Respuestas SI / NO / NA (checklists)
+        FRONT->>FRONT: estadoPermiso(data) → detecta NO
+    end
+
+    SISO->>FRONT: Guardar
+    FRONT->>API: POST /api/formatos/:id
+    API->>DB: db.crear(id, data)
+    DB-->>API: registro {id, estado, historial}
+    API-->>FRONT: 201 Registro + historial
+
+    SISO->>FRONT: Generar PDF
+    FRONT->>API: POST /api/formatos/:id/:rid/pdf
+    API->>PDF: generarPdf(esquema, data, regId)
+    PDF-->>API: {filename, url: /pdfs/xxx.pdf}
+    API-->>FRONT: {filename, url}
+    FRONT->>FRONT: Abre iframe con url del PDF
+    FRONT->>DOC: Ver / Descargar PDF

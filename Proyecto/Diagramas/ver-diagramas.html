@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagramas — SSTech SaaS</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root { --azul:#0f2a43; --verde:#1d7a46; --borde:#d7dde3; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI',system-ui,Arial,sans-serif; background:#f4f7fa; color:#1e2a38; }
+  header { background:var(--azul); color:#fff; padding:18px 30px; display:flex; align-items:center; gap:12px; }
+  header h1 { font-size:1.2rem; }
+  header small { opacity:.8; font-weight:400; }
+  nav { display:flex; gap:8px; padding:12px 30px; flex-wrap:wrap; background:#fff; border-bottom:1px solid var(--borde); }
+  nav button {
+    border:1px solid var(--borde); background:#fff; padding:8px 14px; border-radius:8px;
+    cursor:pointer; font-size:.8rem; font-weight:600; color:#1e2a38;
+  }
+  nav button.activo { background:var(--verde); color:#fff; border-color:var(--verde); }
+  main { padding:24px 30px; }
+  .diagrama { background:#fff; border:1px solid var(--borde); border-radius:12px; padding:20px; overflow:auto; }
+  .diagrama h2 { font-size:1rem; margin-bottom:6px; color:var(--azul); }
+  .diagrama p { font-size:.8rem; color:#6b7a8b; margin-bottom:14px; }
+  .diagrama .mermaid { margin: 0 auto; }
+  .oculto { display:none; }
+  footer { padding:16px 30px; font-size:.72rem; color:#6b7a8b; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📐 Diagramas — SSTech SaaS</h1>
+  <small>Plataforma de digitalización de formatos SST · Documentación visual</small>
+</header>
+
+<nav id="nav"></nav>
+
+<main>
+  <div id="contenedor"></div>
+</main>
+
+<footer>Generado con Mermaid.js · Proyecto: Formulación de Proyectos de Ingeniería — SSTech SaaS</footer>
+
+<script>
+  // Fuente única de los diagramas (espejo de los archivos .mmd)
+  const DIAGRAMAS = [
+    {
+      id: '1-casos-de-uso',
+      titulo: 'Diagrama de Casos de Uso',
+      desc: 'Actores (Coordinador SST y SISO) e interacciones con el sistema.',
+      mmd: `flowchart LR
+    C[Coordinador SST]
+    S[SISO]
+    subgraph SISTEMA[SSTech SaaS]
+        direction TB
+        UC01[Iniciar Sesión]
+        UC02[Ver catálogo de formatos]
+        UC03[Crear registro]
+        UC04[Editar registro]
+        UC05[Eliminar registro]
+        UC06[Buscar / Filtrar registros]
+        UC07[Generar PDF]
+        UC08[Aprobar permiso]
+        UC09[Aplicar regla de NO → NO CONCEDIDO]
+        UC10[Ver trazabilidad / historial]
+        UC11[Ver indicadores]
+        UC12[Exportar CSV]
+        UC13[Gestionar usuarios SISO]
+        UC14[Revalidar / cancelar permiso]
+    end
+    C --> UC01
+    C --> UC02
+    C --> UC06
+    C --> UC08
+    C --> UC09
+    C --> UC10
+    C --> UC11
+    C --> UC12
+    C --> UC13
+    C --> UC14
+    S --> UC01
+    S --> UC02
+    S --> UC03
+    S --> UC04
+    S --> UC06
+    S --> UC07
+    S --> UC09`
+    },
+    {
+      id: '2-arquitectura',
+      titulo: 'Diagrama de Arquitectura',
+      desc: 'Componentes de frontend, backend, almacenamiento y motores de PDF.',
+      mmd: `flowchart TB
+    subgraph Frontend[Navegador · SPA vanilla]
+        UI[index.html + app.css]
+        APP[js/app.js · Controlador]
+        FORM[js/form.js · Render dinámico]
+        UTIL[js/util.js · Helpers / estadoPermiso]
+        VIEWER[iframe · Visor PDF]
+        DASH[Tablero de indicadores]
+    end
+    subgraph Backend[Node.js + Express]
+        API[server.js · API REST + estáticos]
+        CFG[config · esquemas 7 formatos]
+        DB[lib/db.js · persistencia JSON]
+        PDF[lib/pdf.js · Motor PDF Puppeteer]
+    end
+    subgraph Almacenamiento
+        DATA[(data/*.json)]
+        PDFS[(pdfs/*.pdf)]
+        PDFS70[Formatos físicos · referencia]
+    end
+    subgraph Externos
+        CHROME[Chrome / Edge del sistema]
+    end
+    UI --> APP
+    APP --> UTIL
+    APP --> FORM
+    FORM --> DASH
+    APP --> API
+    VIEWER --> PDFS
+    API --> CFG
+    API --> DB
+    API --> PDF
+    DB --> DATA
+    PDF --> PDFS
+    PDF --> CHROME
+    CFG -. fidelidad .-> PDFS70`
+    },
+    {
+      id: '3-secuencia-pdf',
+      titulo: 'Diagrama de Secuencia — Crear registro + PDF',
+      desc: 'Flujo del SISO desde el nuevo registro hasta generar y ver el PDF.',
+      mmd: `sequenceDiagram
+    autonumber
+    participant SISO
+    participant FRONT as SPA (frontend)
+    participant API as Server Express
+    participant DB as data/*.json
+    participant PDF as lib/pdf.js + Chrome
+    SISO->>FRONT: Nuevo registro
+    FRONT->>FRONT: inicialData(esquema)
+    FRONT->>FRONT: renderForm() (formulario dinámico)
+    loop Diligenciamiento
+        SISO->>FRONT: Respuestas SI / NO / NA (checklists)
+        FRONT->>FRONT: estadoPermiso(data) → detecta NO
+    end
+    SISO->>FRONT: Guardar
+    FRONT->>API: POST /api/formatos/:id
+    API->>DB: db.crear(id, data)
+    DB-->>API: registro {id, estado, historial}
+    API-->>FRONT: 201 Registro + historial
+    SISO->>FRONT: Generar PDF
+    FRONT->>API: POST /api/formatos/:id/:rid/pdf
+    API->>PDF: generarPdf(esquema, data, regId)
+    PDF-->>API: {filename, url: /pdfs/xxx.pdf}
+    API-->>FRONT: {filename, url}
+    FRONT->>FRONT: Abre iframe con url del PDF
+    FRONT->>DOC: Ver / Descargar PDF`
+    },
+    {
+      id: '4-modelo-datos',
+      titulo: 'Diagrama de Modelo de Datos (ER)',
+      desc: 'Entidades de formato, registro, historial, usuario e indicador (fase JSON → relacional).',
+      mmd: `erDiagram
+    FORMATO {
+        string id PK
+        string codigo
+        string nombre
+        string version
+        json esquema
+    }
+    REGISTRO {
+        uuid id PK
+        string formatoId FK
+        string estado
+        json data
+        datetime fechaCreacion
+        datetime fechaActualizacion
+    }
+    HISTORIAL {
+        uuid id PK
+        uuid registroId FK
+        datetime fecha
+        string accion
+        string usuario
+        string detalle
+    }
+    USUARIO {
+        uuid id PK
+        string nombre
+        string email
+        string passwordHash
+        string rol
+        boolean activo
+    }
+    INDICADOR {
+        uuid id PK
+        string formatoId FK
+        string codigo
+        string nombre
+        string formula
+        json filtros
+    }
+    FORMATO ||--o{ REGISTRO : define
+    REGISTRO ||--o{ HISTORIAL : audita
+    USUARIO ||--o{ REGISTRO : crea
+    FORMATO ||--o{ INDICADOR : calcula`
+    },
+    {
+      id: '5-roles',
+      titulo: 'Diagrama de Roles y Permisos',
+      desc: 'Contraste de alcances entre Coordinador SST y SISO, con la regla de negocio de estado.',
+      mmd: `flowchart TD
+    A[Login] --> B{¿Rol?}
+    B -- Coordinador SST --> C[Panel completo]
+    C --> C1[Ver TODOS los registros]
+    C --> C2[Aprobar → CONCEDIDO]
+    C --> C3[Cancelar → CANCELADO]
+    C --> C4[Ver / eliminar registros]
+    C --> C5[Ver indicadores globales]
+    C --> C6[Exportar CSV]
+    C --> C7[Gestionar usuarios SISO]
+    B -- SISO --> D[Panel de campo]
+    D --> D1[Crear registros]
+    D --> D2[Diligenciar formularios]
+    D --> D3[Ver SOLO sus registros]
+    D --> D4[Generar PDF de sus registros]
+    D2 --> E{¿Respuesta NO?}
+    E -- Sí --> E1[Estado → NO CONCEDIDO]
+    E -- No --> E2[Propone CONCEDIDO]
+    E1 --> F[Coordinador revisa]
+    E2 --> F
+    classDef coord fill:#0f2a43,color:#fff
+    classDef siso fill:#1d7a46,color:#fff
+    class C,C1,C2,C3,C4,C5,C6,C7 coord
+    class D,D1,D2,D3,D4 siso`
+    }
+  ];
+
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'loose',
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#eaf2f8',
+      primaryTextColor: '#0f2a43',
+      primaryBorderColor: '#0f2a43',
+      lineColor: '#0f2a43',
+      secondaryColor: '#f0faf2',
+      tertiaryColor: '#fdf0dc'
+    }
+  });
+
+  const cont = document.getElementById('contenedor');
+  const nav = document.getElementById('nav');
+
+  DIAGRAMAS.forEach((d, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = `${i + 1}. ${d.titulo}`;
+    btn.onclick = () => mostrar(i);
+    nav.appendChild(btn);
+
+    const div = document.createElement('section');
+    div.className = 'diagrama' + (i === 0 ? '' : ' oculto');
+    div.id = 'dg-' + i;
+    div.innerHTML = `<h2>${d.id}. ${d.titulo}</h2><p>${d.desc}</p>
+      <div class="mermaid">${d.mmd.replace(/</g, '&lt;')}</div>`;
+    cont.appendChild(div);
+  });
+
+  function mostrar(i) {
+    const prevs = document.querySelectorAll('.diagrama');
+    prevs.forEach(p => p.classList.add('oculto'));
+    const curr = document.getElementById('dg-' + i);
+    curr.classList.remove('oculto');
+    document.querySelectorAll('nav button').forEach((b, j) => b.classList.toggle('activo', j === i));
+    mermaid.run({ nodes: [curr.querySelector('.mermaid')] });
+  }
+
+  mermaid.run({ nodes: [document.getElementById('dg-0').querySelector('.mermaid')] });
+</script>
+</body>
+</html>

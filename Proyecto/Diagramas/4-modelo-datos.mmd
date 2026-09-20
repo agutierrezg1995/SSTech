@@ -1,0 +1,52 @@
+---
+title: Modelo de datos — SSTech SaaS (fase JSON → relacional)
+---
+erDiagram
+    FORMATO {
+        string id PK "ft-ope-06"
+        string codigo "FT-OPE-06"
+        string nombre
+        string version "07"
+        json esquema
+    }
+
+    REGISTRO {
+        uuid id PK
+        string formatoId FK
+        string estado "BORRADOR|CONCEDIDO|NO CONCEDIDO|CANCELADO"
+        json data
+        datetime fechaCreacion
+        datetime fechaActualizacion
+    }
+
+    HISTORIAL {
+        uuid id PK
+        uuid registroId FK
+        datetime fecha
+        string accion "CREADO|ACTUALIZADO|ESTADO|x"
+        string usuario
+        string detalle
+    }
+
+    USUARIO {
+        uuid id PK
+        string nombre
+        string email
+        string passwordHash
+        string rol "COORDINADOR|SISO"
+        boolean activo
+    }
+
+    INDICADOR {
+        uuid id PK
+        string formatoId FK
+        string codigo "KP1"
+        string nombre
+        string formula
+        json filtros
+    }
+
+    FORMATO ||--o{ REGISTRO : "define"
+    REGISTRO ||--o{ HISTORIAL : "audita"
+    USUARIO ||--o{ REGISTRO : "crea/edita"
+    FORMATO ||--o{ INDICADOR : "calcula"

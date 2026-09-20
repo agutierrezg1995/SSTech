@@ -1,0 +1,74 @@
+:root { --borde:#000; --tam:8.5pt; }
+* { box-sizing: border-box; margin:0; padding:0; }
+body { font-family: Arial, Helvetica, sans-serif; background:#e9ecef; color:#000; padding-bottom:40px; }
+
+/* ---------- Barra de herramientas (solo pantalla) ---------- */
+#toolbar { position:sticky; top:0; z-index:50; background:#0f2a43; color:#fff; display:flex;
+  align-items:center; gap:10px; padding:10px 16px; flex-wrap:wrap; }
+#toolbar .brand { font-weight:bold; font-size:1.05rem; margin-right:8px; }
+#toolbar button { border:none; border-radius:6px; padding:8px 14px; font-size:.85rem; cursor:pointer; }
+.btn-primary { background:#1d7a46; color:#fff; }
+.btn-secondary { background:#fff; color:#0f2a43; }
+.btn-warn { background:#b02a2a; color:#fff; }
+#estado { margin-left:auto; padding:6px 12px; border-radius:6px; font-size:.8rem; font-weight:bold; }
+
+/* ---------- A4 / hoja ---------- */
+.hoja { width:210mm; min-height:297mm; background:#fff; color:#000; margin:20px auto;
+  padding:12mm 14mm; box-shadow:0 4px 20px rgba(0,0,0,.25); }
+@media print {
+  body { background:#fff; padding:0; }
+  #toolbar { display:none !important; }
+  .hoja { margin:0; box-shadow:none; width:auto; min-height:auto; padding:0; }
+  .no-print { display:none !important; }
+}
+@page { size:A4; margin:10mm 12mm; }
+
+/* ---------- Tipografía del formato ---------- */
+.hoja * { font-size:var(--tam); }
+table { border-collapse:collapse; width:100%; }
+td, th { border:1px solid var(--borde); padding:3px 5px; vertical-align:top; }
+.center { text-align:center; }
+.bold { font-weight:bold; }
+.smaller { font-size:7.5pt; }
+.titulo-formato { text-align:center; font-size:15pt; font-weight:bold; letter-spacing:1px; padding:6px; }
+.celda { padding:2px 4px; border:1px solid #000; }
+.marco { border:1px solid #000; padding:4px; }
+.just { text-align:justify; }
+
+input[type=text], input[type=number], input[type=date], input[type=time], select, textarea {
+  border:1px solid #888; border-radius:3px; padding:2px 4px; font-size:8pt; width:100%; }
+textarea { resize:vertical; }
+input[type=radio], input[type=checkbox] { accent-color:#0f2a43; }
+
+.chip { display:inline-flex; align-items:center; gap:3px; border:1px solid #666; border-radius:3px;
+  padding:1px 4px; margin:1px; }
+.chip input { margin:0; }
+
+.seccion-t { background:#0f2a43; color:#fff; font-weight:bold; font-size:8.5pt; padding:3px 6px; text-align:center; }
+.seccion-g { background:#d5dbe0; font-weight:bold; font-size:8.5pt; padding:3px 6px; border:1px solid #000; }
+.titulo-col { font-weight:bold; font-size:7.5pt; text-align:center; }
+
+/* ---------- Modos ---------- */
+#vistaEdicion, #vistaPrevia { display:none; }
+body.modo-edicion #vistaEdicion { display:block; }
+body.modo-previo #vistaPrevia { display:block; }
+
+.badge-ok { background:#1d7a46; }
+.badge-no { background:#b02a2a; }
+.badge-warn { background:#b07a1d; }
+.badge-info { background:#3a5a8c; }
+
+.banner-no { background:#fbe4e4; border:2px solid #b02a2a; color:#7a1010; font-weight:bold;
+  text-align:center; padding:8px; margin:6px 0; }
+
+/* Tabla verificación */
+.verif td { font-size:7.5pt; }
+.verif .num { width:4%; text-align:center; font-weight:bold; }
+.verif .texto { width:74%; }
+.verif .resp { width:7%; text-align:center; }
+
+/* Firmas */
+.firma-box { text-align:center; font-size:7pt; padding-top:4px; }
+
+/* Estado resumen en toolbar */
+#resumen { margin-left:auto; font-size:.75rem; }

@@ -14,6 +14,28 @@ Permite crear, editar, aprobar y generar PDF de registros con roles (Coordinador
 | Coordinador  | coordinador@sstech.co     | coordinador123 |
 | SISO         | siso@sstech.co            | siso123        |
 
+## Formatos digitalizados
+
+| Código    | Formato                                            | Versión |
+|-----------|----------------------------------------------------|---------|
+| FT-OPE-06 | Permiso de Trabajo en Campo                         | v7      |
+| FT-OPE-51 | Permiso de Trabajo en Alturas                       | v1      |
+| FT-OPE-56 | Control de Asistencia de Operaciones                | v2      |
+| FT-SST-08 | Control Semanal de Pausas Activas                   | v1      |
+| FT-SST-11 | Reporte de Investigación de A.T e I.T               | v4      |
+| FT-SST-37 | Análisis de Trabajo Seguro (ATS)                    | v6      |
+| FT-SST-39 | Control de Entregas de EPP                          | v1      |
+
+## Datos
+
+- El almacenamiento es en **archivos JSON** dentro de `Proyecto/platform/data/`
+  (`usuarios.json`, `sesiones.json` y un archivo por formato, p. ej. `ft-ope-06.json`).
+- Cada registro es un objeto con `data` (contenido según `esquema.js`), estado
+  (BORRADOR / CONCEDIDO / NO CONCEDIDO / CANCELADO), creador, fechas e historial
+  de trazabilidad.
+- La carpeta `data/` está en `.gitignore` y **no se sube al repositorio**: se regenera
+  al ejecutar `npm run seed`.
+
 ## Requisitos
 
 - Node.js **18+** (probado con Node 24).

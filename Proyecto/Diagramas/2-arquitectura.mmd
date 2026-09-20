@@ -1,0 +1,44 @@
+---
+title: Arquitectura — SSTech SaaS
+---
+flowchart TB
+    subgraph Frontend[Navegador · SPA vanilla]
+        UI[index.html + app.css]
+        APP[js/app.js · Controlador]
+        FORM[js/form.js · Render dinámico]
+        UTIL[js/util.js · Helpers / estadoPermiso]
+        VIEWER[iframe · Visor PDF]
+        DASH[Tablero de indicadores]
+    end
+
+    subgraph Backend[Node.js + Express]
+        API[server.js · API REST + estáticos]
+        CFG[config · esquemas 7 formatos]
+        DB[lib/db.js · persistencia JSON]
+        PDF[lib/pdf.js · Motor PDF Puppeteer]
+    end
+
+    subgraph Almacenamiento
+        DATA[(data/*.json)]
+        PDFS[(pdfs/*.pdf)]
+        PDFS70[Formatos físicos 📄 referência]
+    end
+
+    subgraph Externos
+        CHROME[Chrome / Edge del sistema]
+    end
+
+    UI --> APP
+    APP --> UTIL
+    APP --> FORM
+    FORM --> DASH
+    APP --> API
+    VIEWER --> PDFS
+
+    API --> CFG
+    API --> DB
+    API --> PDF
+    DB --> DATA
+    PDF --> PDFS
+    PDF --> CHROME
+    CFG -. fidelidad .-> PDFS70

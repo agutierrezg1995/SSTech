@@ -1,0 +1,31 @@
+---
+title: Roles y permisos — Coordinador SST vs SISO
+---
+flowchart TD
+    A[Login] --> B{¿Rol?}
+
+    B -- Coordinador SST --> C[Panel completo]
+    C --> C1[Ver TODOS los registros]
+    C --> C2[Aprobar → CONCEDIDO]
+    C --> C3[Cancelar → CANCELADO]
+    C --> C4[Ver / eliminar registros]
+    C --> C5[Ver indicadores globales]
+    C --> C6[Exportar CSV]
+    C --> C7[Gestionar usuarios SISO]
+
+    B -- SISO --> D[Panel de campo]
+    D --> D1[Crear registros]
+    D --> D2[Diligenciar formularios]
+    D --> D3[Ver SOLO sus registros]
+    D --> D4[Generar PDF de sus registros]
+
+    D2 --> E{¿Respuesta NO?}
+    E -- Sí --> E1[Estado → NO CONCEDIDO]
+    E -- No --> E2[Propone CONCEDIDO]
+    E1 --> F[Coordinador revisa]
+    E2 --> F
+
+    classDef coord fill:#0f2a43,color:#fff
+    classDef siso fill:#1d7a46,color:#fff
+    class C,C1,C2,C3,C4,C5,C6,C7 coord
+    class D,D1,D2,D3,D4 siso

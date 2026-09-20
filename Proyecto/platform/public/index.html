@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSTech SaaS — Plataforma de Formatos SST</title>
+<link rel="stylesheet" href="css/app.css?v=20260920">
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="login" class="login-view hidden">
+  <div class="login-box">
+    <div class="login-brand">
+      <div class="logo">SSTech</div>
+      <div class="logo-sub">SaaS · Gestión SST</div>
+    </div>
+    <h1>Iniciar sesión</h1>
+    <p class="muted smaller">Plataforma de formatos de Seguridad y Salud en el Trabajo</p>
+
+    <label class="login-label">Correo electrónico</label>
+    <input type="email" id="login-email" placeholder="correo@sstech.co" autocomplete="username">
+
+    <label class="login-label">Contraseña</label>
+    <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+
+    <button class="btn btn-primary btn-block" onclick="UI.login()">Entrar</button>
+    <div id="login-error" class="login-error hidden"></div>
+
+    <div class="login-demo">
+      <div class="login-demo-titulo">Cuentas demo</div>
+      <div class="login-demo-item"><b>Coordinador:</b> coordinador@sstech.co / coordinador123</div>
+      <div class="login-demo-item"><b>SISO:</b> siso@sstech.co / siso123</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app" class="hidden">
+<div id="layout">
+  <aside id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">SSTech</div>
+      <div class="logo-sub">SaaS · Gestión SST</div>
+    </div>
+    <div class="sidebar-label">FORMATOS</div>
+    <nav id="navbar"></nav>
+    <div class="sidebar-footer" id="sidebar-footer"></div>
+  </aside>
+
+  <main id="main">
+    <!-- Barra superior con usuario -->
+    <div id="topbar">
+      <div id="topbar-usuario"></div>
+      <div class="topbar-acciones">
+        <button class="btn btn-secondary sm" id="btn-admin" onclick="UI.abrirAdmin()" title="Gestionar usuarios SISO">👥 Usuarios</button>
+        <button class="btn btn-outline sm" onclick="UI.cerrarSesion()">⏻ Salir</button>
+      </div>
+    </div>
+
+    <!-- Encabezado de formato -->
+    <header id="header">
+      <div id="header-titulo"></div>
+      <div class="header-actions">
+        <button class="btn btn-primary" id="btn-nuevo" onclick="UI.nuevo()">＋ Nuevo registro</button>
+        <button class="btn btn-outline" onclick="UI.exportarCSV()">⤓ Exportar CSV</button>
+        <button class="btn btn-secondary" id="btn-indicadores" onclick="UI.abrirIndicadores()">📊 Indicadores</button>
+      </div>
+    </header>
+
+    <!-- Barra de búsqueda y filtro estado -->
+    <div id="filtros">
+      <input type="search" id="busqueda" placeholder="Buscar en registros..." oninput="UI.renderTabla()">
+      <select id="filtroEstado" onchange="UI.renderTabla()">
+        <option value="">Todos los estados</option>
+        <option>BORRADOR</option>
+        <option>CONCEDIDO</option>
+        <option>NO CONCEDIDO</option>
+        <option>CANCELADO</option>
+      </select>
+    </div>
+
+    <!-- Tabla CRUD -->
+    <div id="tabla-wrap"></div>
+  </main>
+</div>
+</div>
+
+<!-- ===================== MODAL FORMULARIO ===================== -->
+<div id="modal" class="modal hidden">
+  <div class="modal-backdrop" onclick="UI.cerrarModal()"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <span class="modal-badge" id="modal-badge"></span>
+        <h2 id="modal-titulo"></h2>
+        <div id="modal-sub" class="muted smaller"></div>
+      </div>
+      <button class="btn-icon" onclick="UI.cerrarModal()">✕</button>
+    </div>
+
+    <!-- Estado y acciones -->
+    <div class="modal-toolbar">
+      <label class="estado-label">Estado:</label>
+      <select id="modal-estado" onchange="UI.cambioEstado()"></select>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="UI.guardar()">💾 Guardar</button>
+      <button class="btn btn-secondary" onclick="UI.generarPDF()">📄 Generar PDF</button>
+    </div>
+
+    <div class="modal-body" id="modal-body"></div>
+
+    <!-- Historial / trazabilidad -->
+    <div class="modal-historial">
+      <div class="historial-titulo">🧭 Trazabilidad</div>
+      <div id="historial" class="historial-list"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-warn" id="btn-eliminar" onclick="UI.eliminar()">🗑 Eliminar registro</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL PDF ===================== -->
+<div id="modalPdf" class="modal hidden">
+  <div class="modal-backdrop" onclick="UI.cerrarPdf()"></div>
+  <div class="modal-box modal-pdf">
+    <div class="modal-header">
+      <div><h2 id="pdf-titulo"></h2><div id="pdf-sub" class="muted smaller"></div></div>
+      <div>
+        <a class="btn btn-primary" id="pdf-descargar" target="_blank" download>⤓ Descargar</a>
+        <button class="btn-icon" onclick="UI.cerrarPdf()">✕</button>
+      </div>
+    </div>
+    <iframe id="pdf-frame" title="Visor PDF"></iframe>
+  </div>
+</div>
+
+<!-- ===================== MODAL INDICADORES ===================== -->
+<div id="modalInd" class="modal hidden">
+  <div class="modal-backdrop" onclick="UI.cerrarIndicadores()"></div>
+  <div class="modal-box modal-ind">
+    <div class="modal-header">
+      <div><h2>📊 Indicadores — <span id="ind-titulo"></span></h2>
+        <div id="ind-sub" class="muted smaller"></div></div>
+      <button class="btn-icon" onclick="UI.cerrarIndicadores()">✕</button>
+    </div>
+    <div class="modal-toolbar">
+      <label class="estado-label">Desde:</label>
+      <input type="date" id="ind-desde" onchange="UI.cargarIndicadores()">
+      <label class="estado-label">Hasta:</label>
+      <input type="date" id="ind-hasta" onchange="UI.cargarIndicadores()">
+      <div class="spacer"></div>
+      <button class="btn btn-secondary sm" onclick="UI.exportarIndicadoresCSV()">⤓ CSV indicadores</button>
+    </div>
+    <div class="modal-body" id="ind-body"></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL ADMIN USUARIOS ===================== -->
+<div id="modalAdmin" class="modal hidden">
+  <div class="modal-backdrop" onclick="UI.cerrarAdmin()"></div>
+  <div class="modal-box modal-admin">
+    <div class="modal-header">
+      <div><h2>👥 Gestión de usuarios</h2></div>
+      <button class="btn-icon" onclick="UI.cerrarAdmin()">✕</button>
+    </div>
+    <div class="modal-body" id="admin-body"></div>
+  </div>
+</div>
+
+<!-- ===================== SPINNER / TOAST ===================== -->
+<div id="spinner" class="hidden">Generando…</div>
+<div id="toast" class="hidden"></div>
+
+<script src="js/util.js?v=20260920"></script>
+<script src="js/form.js?v=20260920"></script>
+<script src="js/validacion.js?v=20260920"></script>
+<script src="js/app.js?v=20260920"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+---
+title: Casos de Uso — SSTech SaaS
+---
+flowchart LR
+    C[Coordinador SST]
+    S[SISO]
+
+    %% Sistema
+    subgraph SISTEMA[SSTech SaaS]
+        direction TB
+        UC01[Iniciar Sesión]
+        UC02[Ver catálogo de formatos]
+        UC03[Crear registro]
+        UC04[Editar registro]
+        UC05[Eliminar registro]
+        UC06[Buscar / Filtrar registros]
+        UC07[Generar PDF]
+        UC08[Aprobar permiso]
+        UC09[Aplicar regla de NO → NO CONCEDIDO]
+        UC10[Ver trazabilidad / historial]
+        UC11[Ver indicadores]
+        UC12[Exportar CSV]
+        UC13[Gestionar usuarios SISO]
+        UC14[Revalidar / cancelar permiso]
+    end
+
+    %% Relaciones Coordinador
+    C --> UC01
+    C --> UC02
+    C --> UC06
+    C --> UC08
+    C --> UC09
+    C --> UC10
+    C --> UC11
+    C --> UC12
+    C --> UC13
+    C --> UC14
+
+    %% Relaciones SISO
+    S --> UC01
+    S --> UC02
+    S --> UC03
+    S --> UC04
+    S --> UC06
+    S --> UC07
+    S --> UC09

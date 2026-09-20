@@ -1,0 +1,14 @@
+# Dependencias
+node_modules/
+
+# Datos y artefactos generados en ejecución
+Proyecto/platform/data/
+Proyecto/platform/pdfs/
+Proyecto/platform/server.log
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

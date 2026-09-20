@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FT-OPE-06 — Permiso de Trabajo en Campo (Digital)</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="modo-edicion">
+
+<div id="toolbar">
+  <span class="brand">SSTech SaaS <span class="smaller">— FT-OPE-06 Digital</span></span>
+  <button class="btn-secondary" onclick="cambiarModo('edicion')">&#9998; Editar</button>
+  <button class="btn-primary" onclick="cambiarModo('previo')">&#128065; Vista previa PDF</button>
+  <button class="btn-warn" onclick="imprimir('auto')">&#128424; Imprimir / Exportar PDF</button>
+  <button class="btn-secondary no-print" onclick="nuevoPermiso()">&#43; Nuevo permiso</button>
+  <span id="estado" class="badge-info">SIN EVALUAR</span>
+</div>
+
+<!-- ============================= EDICIÓN ============================= -->
+<div id="vistaEdicion">
+  <div class="hoja" id="hoja-edicion"></div>
+</div>
+
+<!-- ============================= PREVIA ============================= -->
+<div id="vistaPrevia">
+  <div class="hoja" id="hoja-previo"></div>
+</div>
+
+<script src="datos.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
