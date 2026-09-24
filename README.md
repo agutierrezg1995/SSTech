@@ -7,12 +7,7 @@ Permite crear, editar, aprobar y generar PDF de registros con roles (Coordinador
 
 **Link local (después de arrancar el servidor): http://localhost:3200**
 
-### Cuentas demo
 
-| Rol          | Email                    | Contraseña     |
-|--------------|--------------------------|----------------|
-| Coordinador  | coordinador@sstech.co     | coordinador123 |
-| SISO         | siso@sstech.co            | siso123        |
 
 ## Formatos digitalizados
 
