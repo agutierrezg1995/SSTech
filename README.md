@@ -21,8 +21,6 @@ de ejecución y cuentas demo. No incluye la app interactiva: esa necesita el ser
 
 **Link local (después de arrancar el servidor): http://localhost:3200**
 
-
-
 ## Formatos digitalizados
 
 | Código    | Formato                                            | Versión |
