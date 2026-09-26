@@ -3,6 +3,20 @@
 Plataforma web de digitalización de formatos de Seguridad y Salud en el Trabajo (SST).
 Permite crear, editar, aprobar y generar PDF de registros con roles (Coordinador SST y SISO).
 
+## 🌐 Sitio web — GitHub Pages
+
+| Qué                          | Dónde                                                        |
+|------------------------------|--------------------------------------------------------------|
+| **URL pública**              | **https://agutierrezg1995.github.io/SSTech/**                 |
+| Carpeta fuente de Pages      | `docs/` (rama `main` → *Deploy from a branch*)                |
+| Archivo raíz del sitio       | `docs/index.html`                                             |
+| Configuración                | Settings → Pages → Source: `main` / `/docs`                   |
+
+Sitio **estático** (un solo archivo, sin build): presentación del proyecto, diagramas
+Mermaid, stack técnico, los 7 formatos digitalizados con link a su PDF original, comandos
+de ejecución y cuentas demo. No incluye la app interactiva: esa necesita el servidor Node.js
+(ver [Nota sobre GitHub Pages](#nota-sobre-github-pages)).
+
 ## 🔗 Acceso a la plataforma
 
 **Link local (después de arrancar el servidor): http://localhost:3200**
@@ -30,6 +44,28 @@ Permite crear, editar, aprobar y generar PDF de registros con roles (Coordinador
   de trazabilidad.
 - La carpeta `data/` está en `.gitignore` y **no se sube al repositorio**: se regenera
   al ejecutar `npm run seed`.
+- `npm run seed` crea además **registros de demostración en los 7 formatos**
+  (CONCEDIDO, NO CONCEDIDO y BORRADOR) con datos realistas y fechas recientes.
+
+## Perfil de usuario
+
+Cada usuario puede gestionar su perfil desde el botón **⚙️ Configuración de perfil**
+en el panel izquierdo: **foto de perfil** (se redimensiona automáticamente en PNG/JPG),
+nombre, cargo, cédula y teléfono. La foto queda guardada en `usuarios.json` y se
+muestra en la barra superior y en la sidebar.
+
+## Gestión de usuarios (SISOs)
+
+En el panel izquierdo, la pestaña **👥 Usuarios** (visible solo para el rol
+Coordinador) permite crear **subalternos SISO**: se asigna nombre, correo y
+contraseña, y ese SISO puede iniciar sesión de inmediato con esas credenciales.
+
+## UI mejorada
+
+Se incorporaron las librerías profesionales **SweetAlert2** (cuadros de diálogo y
+confirmaciones animadas) y **Animate.css** (animaciones de entrada), servidas de forma
+local en `Proyecto/platform/public/vendor/`. Los estilos incluyen degradados,
+glassmorphism y sombras para una experiencia más profesional.
 
 ## Requisitos
 
@@ -74,8 +110,8 @@ node tests/e2e/validacion.e2e.js
 SSTech Saas/
 ├── Proyecto/
 │   ├── platform/        → Frontend + API REST (Express)
-│   │   ├── public/      → app.js, form.js, util.js, validacion.js, css
-│   │   └── lib/         → db.js, pdf.js
+│   │   ├── public/      → app.js, form.js, util.js, validacion.js, css, vendor/(SweetAlert2, Animate.css)
+│   │   └── lib/         → db.js, pdf.js, auth.js, indicadores.js, seed-util.js
 │   ├── formatos/        → Esquemas de cada formato (esquema.js / indicadores.js)
 │   ├── Diagramas/       → Diagramas Mermaid de arquitectura
 │   └── Documentacion/   → Especificación, arquitectura y auditoría

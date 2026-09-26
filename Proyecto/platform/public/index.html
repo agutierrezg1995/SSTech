@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SSTech SaaS — Plataforma de Formatos SST</title>
-<link rel="stylesheet" href="css/app.css?v=20260920">
+<link rel="stylesheet" href="vendor/animate.min.css">
+<link rel="stylesheet" href="vendor/sweetalert2.min.css">
+<link rel="stylesheet" href="css/app.css?v=20260920pro">
 </head>
 <body>
 
@@ -45,6 +47,21 @@
     </div>
     <div class="sidebar-label">FORMATOS</div>
     <nav id="navbar"></nav>
+    <div id="sidebar-admin" class="hidden">
+      <div class="sidebar-label">ADMINISTRACIÓN</div>
+      <button class="nav-item" id="btn-nav-usuarios" onclick="UI.abrirAdmin()" title="Crear y gestionar subalternos (SISO)">
+        <span class="nav-icono">👥</span>
+        <span class="nav-texto">Usuarios
+          <span class="nav-codigo">SISOs · accesos</span>
+        </span>
+      </button>
+    </div>
+    <div id="sidebar-ajustes">
+      <button class="btn-perfil-side" onclick="UI.abrirPerfil()">
+        <span class="nav-icono">⚙️</span>
+        <span>Configuración de perfil</span>
+      </button>
+    </div>
     <div class="sidebar-footer" id="sidebar-footer"></div>
   </aside>
 
@@ -52,8 +69,8 @@
     <!-- Barra superior con usuario -->
     <div id="topbar">
       <div id="topbar-usuario"></div>
-      <div class="topbar-acciones">
-        <button class="btn btn-secondary sm" id="btn-admin" onclick="UI.abrirAdmin()" title="Gestionar usuarios SISO">👥 Usuarios</button>
+<div class="topbar-acciones">
+        <button class="btn btn-secondary sm" id="btn-indicadores" onclick="UI.abrirIndicadores()" title="Tablero de KPIs">📊 Indicadores</button>
         <button class="btn btn-outline sm" onclick="UI.cerrarSesion()">⏻ Salir</button>
       </div>
     </div>
@@ -163,10 +180,28 @@
   <div class="modal-backdrop" onclick="UI.cerrarAdmin()"></div>
   <div class="modal-box modal-admin">
     <div class="modal-header">
-      <div><h2>👥 Gestión de usuarios</h2></div>
+      <div><h2>👥 Usuarios — Subalternos SISO</h2><div class="muted smaller">Crea accesos (correo + contraseña) para tu equipo de campo</div></div>
       <button class="btn-icon" onclick="UI.cerrarAdmin()">✕</button>
     </div>
     <div class="modal-body" id="admin-body"></div>
+  </div>
+</div>
+
+<!-- ===================== MODAL PERFIL ===================== -->
+<div id="modalPerfil" class="modal hidden">
+  <div class="modal-backdrop" onclick="UI.cerrarPerfil()"></div>
+  <div class="modal-box modal-perfil">
+    <div class="modal-header">
+      <div>
+        <h2>⚙️ Configuración de perfil</h2>
+        <div id="perfil-sub" class="muted smaller"></div>
+      </div>
+      <div>
+        <a class="btn btn-secondary sm" href="index.html" style="display:none" id="perfil-switch" onclick="UI.cerrarPerfil()">↻ Cambiar cuenta</a>
+        <button class="btn-icon" onclick="UI.cerrarPerfil()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="perfil-body"></div>
   </div>
 </div>
 
@@ -174,9 +209,10 @@
 <div id="spinner" class="hidden">Generando…</div>
 <div id="toast" class="hidden"></div>
 
+<script src="vendor/sweetalert2.all.min.js"></script>
 <script src="js/util.js?v=20260920"></script>
 <script src="js/form.js?v=20260920"></script>
 <script src="js/validacion.js?v=20260920"></script>
-<script src="js/app.js?v=20260920"></script>
+<script src="js/app.js?v=20260920pro"></script>
 </body>
 </html>

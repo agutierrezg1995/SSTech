@@ -36,8 +36,22 @@ function verificarPassword(password, almacenado) {
   return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(prueba, 'hex'));
 }
 
+function perfilPublico(u) {
+  return {
+    id: u.id,
+    nombre: u.nombre,
+    email: u.email,
+    rol: u.rol,
+    activo: u.activo,
+    foto: u.foto || '',
+    cargo: u.cargo || '',
+    cedula: u.cedula || '',
+    telefono: u.telefono || ''
+  };
+}
+
 function listarUsuarios() {
-  return leerUsuarios().map(u => ({ id: u.id, nombre: u.nombre, email: u.email, rol: u.rol, activo: u.activo }));
+  return leerUsuarios().map(perfilPublico);
 }
 
 function crearUsuario({ nombre, email, password, rol }) {
@@ -48,6 +62,10 @@ function crearUsuario({ nombre, email, password, rol }) {
     id: crypto.randomUUID(),
     nombre, email: String(email).toLowerCase(), rol,
     activo: true,
+    foto: '',
+    cargo: '',
+    cedula: '',
+    telefono: '',
     passwordHash: hashPassword(password)
   };
   users.push(nuevo);
@@ -55,12 +73,26 @@ function crearUsuario({ nombre, email, password, rol }) {
   return { ok: true, usuario: listarUsuarios().find(u => u.id === nuevo.id) };
 }
 
+/* Actualiza los datos de perfil (nombre, foto, cargo, cédula, teléfono) del usuario */
+function actualizarPerfil(id, cambios) {
+  const users = leerUsuarios();
+  const idx = users.findIndex(u => u.id === id);
+  if (idx < 0) return { ok: false, error: 'Usuario no encontrado' };
+  const u = users[idx];
+  const permitidos = ['nombre', 'foto', 'cargo', 'cedula', 'telefono'];
+  permitidos.forEach(c => {
+    if (cambios[c] !== undefined) u[c] = String(cambios[c]).slice(0, 6000);
+  });
+  guardarUsuarios(users);
+  return { ok: true, usuario: perfilPublico(u) };
+}
+
 function autenticar(email, password) {
   const usuario = leerUsuarios().find(u =>
     u.email === String(email).toLowerCase().trim() && u.activo !== false);
   if (!usuario) return { error: 'Credenciales inválidas' };
   if (!verificarPassword(password, usuario.passwordHash)) return { error: 'Credenciales inválidas' };
-  return { ok: true, usuario: { id: usuario.id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol } };
+  return { ok: true, usuario: perfilPublico(usuario) };
 }
 
 /* ---------- Sesiones ---------- */
@@ -86,7 +118,7 @@ function usuarioPorToken(token) {
     return null;
   }
   const u = leerUsuarios().find(x => x.id === s.usuarioId && x.activo !== false);
-  return u ? { id: u.id, nombre: u.nombre, email: u.email, rol: u.rol } : null;
+  return u ? perfilPublico(u) : null;
 }
 
 function cerrarSesion(token) {
@@ -130,6 +162,7 @@ module.exports = {
   crearSesion,
   usuarioPorToken,
   cerrarSesion,
+  actualizarPerfil,
   requireAuth,
   requireRol,
   hashPassword,

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSTech SaaS — Plataforma de Digitalización de Formatos SST</title>
+<meta name="description" content="Plataforma web para crear, aprobar y generar PDF de formatos de Seguridad y Salud en el Trabajo. Node.js + Express + SPA vanilla, 7 formatos digitalizados, roles Coordinador SST y SISO.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230f2a43'/><text x='50' y='68' font-size='54' text-anchor='middle' fill='%23fff' font-family='Segoe UI,Arial' font-weight='700'>S</text></svg>">
+<style>
+  :root {
+    --azul:#0f2a43; --azul-2:#1c4a72; --verde:#1d7a46; --verde-2:#eaf6ee;
+    --borde:#d7dde3; --fondo:#f4f7fa; --texto:#1e2a38; --muted:#6b7a8b;
+    --radio:12px; --sombra:0 2px 10px rgba(15,42,67,.07);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+    background:var(--fondo); color:var(--texto); line-height:1.55;
+  }
+  a { color:var(--azul-2); }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 22px; }
+
+  /* ---------- Header ---------- */
+  header {
+    background:linear-gradient(135deg,var(--azul) 0%,var(--azul-2) 100%);
+    color:#fff; padding:44px 0 40px; border-bottom:4px solid var(--verde);
+  }
+  header .wrap { display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:14px; }
+  .brand .mark {
+    width:52px; height:52px; border-radius:14px; background:var(--verde);
+    display:grid; place-items:center; font-size:1.7rem; font-weight:700; flex:none;
+  }
+  .brand h1 { font-size:1.65rem; letter-spacing:.2px; }
+  .brand p { font-size:.86rem; opacity:.85; }
+  .badges { display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
+  .badge {
+    font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+    background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.28);
+    padding:4px 9px; border-radius:999px;
+  }
+  header .cta { display:flex; flex-direction:column; gap:8px; }
+  .btn {
+    display:inline-block; text-align:center; text-decoration:none; font-weight:600;
+    font-size:.82rem; padding:10px 16px; border-radius:9px; border:1px solid transparent;
+    transition:transform .12s ease, filter .12s ease;
+  }
+  .btn:hover { transform:translateY(-1px); filter:brightness(1.07); }
+  .btn-verde { background:var(--verde); color:#fff; }
+  .btn-linea { background:transparent; color:#fff; border-color:rgba(255,255,255,.5); }
+
+  /* ---------- Secciones ---------- */
+  section { padding:38px 0; }
+  section:nth-of-type(even) { background:#fff; border-block:1px solid var(--borde); }
+  h2.seccion {
+    font-size:1.2rem; color:var(--azul); margin-bottom:6px;
+    display:flex; align-items:center; gap:9px;
+  }
+  p.sub { color:var(--muted); font-size:.87rem; margin-bottom:20px; }
+
+  /* ---------- Stats ---------- */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+  .stat {
+    background:#fff; border:1px solid var(--borde); border-radius:var(--radio);
+    padding:16px; text-align:center; box-shadow:var(--sombra);
+  }
+  .stat b { display:block; font-size:1.75rem; color:var(--verde); line-height:1.1; }
+  .stat span { font-size:.76rem; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+
+  /* ---------- Tarjetas ---------- */
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+  .card {
+    background:#fff; border:1px solid var(--borde); border-left:4px solid var(--verde);
+    border-radius:var(--radio); padding:16px 18px; box-shadow:var(--sombra);
+  }
+  .card h3 { font-size:.94rem; color:var(--azul); margin-bottom:4px; }
+  .card p { font-size:.82rem; color:var(--muted); }
+
+  /* ---------- Tabla ---------- */
+  .tabla-scroll { overflow-x:auto; border:1px solid var(--borde); border-radius:var(--radio); box-shadow:var(--sombra); }
+  table { width:100%; border-collapse:collapse; background:#fff; font-size:.84rem; }
+  th, td { padding:11px 14px; text-align:left; border-bottom:1px solid var(--borde); }
+  th { background:var(--azul); color:#fff; font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; }
+  tbody tr:last-child td { border-bottom:none; }
+  tbody tr:hover { background:var(--verde-2); }
+  td.cod { font-family:Consolas,monospace; font-weight:700; color:var(--azul); white-space:nowrap; }
+  .pill {
+    display:inline-block; font-size:.68rem; font-weight:700; padding:3px 8px;
+    border-radius:999px; background:#eef3f8; color:var(--azul-2); white-space:nowrap;
+  }
+
+  /* ---------- Código ---------- */
+  pre {
+    background:#0f2a43; color:#e6eef5; padding:16px 18px; border-radius:var(--radio);
+    overflow-x:auto; font-size:.82rem; line-height:1.6;
+    font-family:Consolas,'Courier New',monospace;
+  }
+  pre .c { color:#8fb3cf; }
+  pre code { font-family:inherit; }
+
+  /* ---------- Diagrama ---------- */
+  .diagrama {
+    background:#fff; border:1px solid var(--borde); border-radius:var(--radio);
+    padding:18px; overflow:auto; box-shadow:var(--sombra);
+  }
+  .tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .tabs button {
+    border:1px solid var(--borde); background:#fff; color:var(--texto);
+    padding:8px 14px; border-radius:8px; cursor:pointer; font-size:.79rem; font-weight:600;
+  }
+  .tabs button.activo { background:var(--verde); border-color:var(--verde); color:#fff; }
+  .oculto { display:none; }
+  .nota { font-size:.76rem; color:var(--muted); margin-top:10px; }
+
+  /* ---------- Aviso ---------- */
+  .aviso {
+    background:#fdf7e8; border:1px solid #e8d9a8; border-left:4px solid #c99a1e;
+    border-radius:var(--radio); padding:16px 18px; font-size:.85rem;
+  }
+  .aviso b { color:#7a5c07; }
+
+  /* ---------- Roles ---------- */
+  .roles { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:14px; }
+  .rol { border-radius:var(--radio); padding:18px; color:#fff; }
+  .rol.coord { background:var(--azul); }
+  .rol.siso { background:var(--verde); }
+  .rol h3 { font-size:1rem; margin-bottom:8px; }
+  .rol ul { margin-left:18px; font-size:.83rem; }
+  .rol li { margin-bottom:3px; }
+
+  footer { background:var(--azul); color:#c6d5e2; padding:22px 0; font-size:.78rem; }
+  footer .wrap { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; }
+  footer a { color:#fff; }
+
+  @media (max-width:640px) {
+    header .wrap { flex-direction:column; align-items:flex-start; }
+    header .cta { flex-direction:row; flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div>
+      <div class="brand">
+        <div class="mark">S</div>
+        <div>
+          <h1>SSTech SaaS</h1>
+          <p>Plataforma de digitalización de formatos de Seguridad y Salud en el Trabajo</p>
+        </div>
+      </div>
+      <div class="badges">
+        <span class="badge">Node.js 18+</span>
+        <span class="badge">Express 4</span>
+        <span class="badge">SPA vanilla JS</span>
+        <span class="badge">PDF · Puppeteer</span>
+        <span class="badge">Persistencia JSON</span>
+      </div>
+    </div>
+    <div class="cta">
+      <a class="btn btn-verde" href="https://github.com/agutierrezg1995/SSTech" target="_blank" rel="noopener">Ver repositorio</a>
+      <a class="btn btn-linea" href="#ejecucion">Cómo ejecutarla</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= RESUMEN ================= -->
+<section>
+  <div class="wrap">
+    <h2 class="seccion">What the project does</h2>
+    <p class="sub">Sitio demostrativo del proyecto. La aplicación es <b>schema-driven</b>: cada formato se describe como un esquema y el motor (frontend + PDF) lo interpreta, de modo que agregar un formato no obliga a tocar el núcleo.</p>
+
+    <div class="stats">
+      <div class="stat"><b>7</b><span>Formatos digitalizados</span></div>
+      <div class="stat"><b>4</b><span>Estados por registro</span></div>
+      <div class="stat"><b>2</b><span>Roles con permisos</span></div>
+      <div class="stat"><b>14</b><span>Casos de uso</span></div>
+      <div class="stat"><b>5</b><span>Diagramas técnicos</span></div>
+      <div class="stat"><b>51</b><span>Pruebas automatizadas</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MÓDULOS ================= -->
+<section>
+  <div class="wrap">
+    <h2 class="seccion">Módulos de la plataforma</h2>
+    <p class="sub">Funcionalidades disponibles según el rol del usuario.</p>
+    <div class="grid">
+      <div class="card"><h3>Gestión de formatos</h3><p>Catálogo navegable con los 7 formatos, búsqueda y filtro por estado en tiempo real.</p></div>
+      <div class="card"><h3>CRUD de registros</h3><p>Alta, edición, eliminación y duplicado con formularios renderizados desde el esquema.</p></div>
+      <div class="card"><h3>Ciclo de estados</h3><p>BORRADOR → CONCEDIDO / NO CONCEDIDO / CANCELADO, con regla de negocio automática.</p></div>
+      <div class="card"><h3>Generación de PDF</h3><p>Render en servidor con Puppeteer, respetando el diseño del formato físico original.</p></div>
+      <div class="card"><h3>Trazabilidad</h3><p>Historial por registro: quién creó, editó o cambió el estado, con fecha y detalle.</p></div>
+      <div class="card"><h3>Tablero de indicadores</h3><p>KPIs por formato con filtros de rango de fechas y exportación a CSV.</p></div>
+      <div class="card"><h3>Validación estricta</h3><p>Campos obligatorios, rangos numéricos, fechas no futuras, tablas y checklists completos.</p></div>
+      <div class="card"><h3>Gestión de usuarios</h3><p>El Coordinador crea accesos para subalternos SISO; cada uno entra con su propio correo.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FORMATOS ================= -->
+<section>
+  <div class="wrap">
+    <h2 class="seccion">Formatos digitalizados</h2>
+    <p class="sub">Cada formato conserva el contenido, los checklists y el orden del documento físico original.</p>
+    <div class="tabla-scroll">
+      <table>
+        <thead>
+          <tr><th>Código</th><th>Formato</th><th>Versión</th><th>Fecha</th><th>Original</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cod">FT-OPE-06</td><td>Permiso de Trabajo en Campo</td>
+            <td><span class="pill">v07</span></td><td>mar-2023</td>
+            <td><a href="https://github.com/agutierrezg1995/SSTech/blob/main/Formatos/FT-OPE-06%20Permiso%20Trabajo%20en%20campo%20v7.pdf" target="_blank" rel="noopener">PDF</a></td>
+          </tr>
+          <tr>
+            <td class="cod">FT-OPE-51</td><td>Permiso de Trabajo en Alturas</td>
+            <td><span class="pill">v01</span></td><td>ene-2023</td>
+            <td><a href="https://github.com/agutierrezg1995/SSTech/blob/main/Formatos/FT-OPE-51%20Permiso%20Trabajo%20en%20Alturas%20v1.pdf" target="_blank" rel="noopener">PDF</a></td>
+          </tr>
+          <tr>
+            <td class="cod">FT-OPE-56</td><td>Control de asistencia de Operaciones</td>
+            <td><span class="pill">v02</span></td><td>jul-2026</td>
+            <td><a href="https://github.com/agutierrezg1995/SSTech/blob/main/Formatos/FT-OPE-56%20Control%20de%20asistencia%20de%20Operaciones%20V2.pdf" target="_blank" rel="noopener">PDF</a></td>
+          </tr>
+          <tr>
+            <td class="cod">FT-SST-08</td><td>Control semanal de pausas activas</td>
+            <td><span class="pill">v01</span></td><td>ene-2022</td>
+            <td><a href="https://github.com/agutierrezg1995/SSTech/blob/main/Formatos/FT-SST-08%20Control%20semanal%20pausas%20activas%20v1.pdf" target="_blank" rel="noopener">PDF</a></td>
+          </tr>
+          <tr>
+            <td class="cod">FT-SST-11</td><td>Reporte de Investigación de A.T e I.T</td>
+            <td><span class="pill">v04</span></td><td>jun-2023</td>
+            <td><a href="https://github.com/agutierrezg1995/SSTech/blob/main/Formatos/FT-SST-11%20Reporte%20de%20Investigaci%C3%B3n%20de%20A.T%20e%20I.T%20v4.pdf" target="_blank" rel="noopener">PDF</a></td>
+          </tr>
+          <tr>
+            <td class="cod">FT-SST-37</td><td>Análisis de Trabajo Seguro (ATS)</td>
+            <td><span class="pill">v06</span></td><td>ago-2022</td>
+            <td><a href="https://github.com/agutierrezg1995/SSTech/blob/main/Formatos/FT-SST-37%20An%C3%A1lisis%20de%20Trabajo%20Seguro%20(ATS)%20v6.pdf" target="_blank" rel="noopener">PDF</a></td>
+          </tr>
+          <tr>
+            <td class="cod">FT-SST-39</td><td>Control de Entregas de EPP</td>
+            <td><span class="pill">v01</span></td><td>ene-2021</td>
+            <td><a href="https://github.com/agutierrezg1995/SSTech/blob/main/Formatos/FT-SST-39%20Control%20de%20Entregas%20de%20EPP%20v1.pdf" target="_blank" rel="noopener">PDF</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DIAGRAMAS ================= -->
+<section>
+  <div class="wrap">
+    <h2 class="seccion">Arquitectura y roles</h2>
+    <p class="sub">Los 5 diagramas Mermaid completos están en <code>Proyecto/Diagramas/ver-diagramas.html</code> dentro del repositorio.</p>
+    <div class="tabs" id="tabs">
+      <button class="activo" data-i="0">1. Arquitectura</button>
+      <button data-i="1">2. Casos de uso</button>
+      <button data-i="2">3. Secuencia · PDF</button>
+      <button data-i="3">4. Modelo de datos</button>
+      <button data-i="4">5. Roles</button>
+    </div>
+    <div class="diagrama">
+      <div id="dg0" class="mermaid">
+flowchart TB
+    subgraph Frontend[Navegador · SPA vanilla]
+        UI[index.html + app.css]
+        APP[js/app.js · Controlador]
+        FORM[js/form.js · Render dinámico]
+        UTIL[js/util.js · Helpers]
+    end
+    subgraph Backend[Node.js + Express]
+        API[server.js · API REST]
+        CFG[config · esquemas 7 formatos]
+        DB[lib/db.js · persistencia JSON]
+        PDF[lib/pdf.js · Motor PDF Puppeteer]
+    end
+    subgraph Almacenamiento
+        DATA[(data/*.json)]
+        PDFS[(pdfs/*.pdf)]
+    end
+    UI --&gt; APP
+    APP --&gt; UTIL
+    APP --&gt; FORM
+    APP --&gt; API
+    API --&gt; CFG
+    API --&gt; DB
+    API --&gt; PDF
+    DB --&gt; DATA
+    PDF --&gt; PDFS
+      </div>
+      <div id="dg1" class="mermaid oculto">
+flowchart LR
+    C[Coordinador SST]
+    S[SISO]
+    subgraph SISTEMA[SSTech SaaS]
+        direction TB
+        UC01[Iniciar Sesión]
+        UC02[Ver catálogo de formatos]
+        UC03[Crear registro]
+        UC04[Editar registro]
+        UC05[Eliminar registro]
+        UC06[Buscar / Filtrar registros]
+        UC07[Generar PDF]
+        UC08[Aprobar permiso]
+        UC09[Aplicar regla de NO → NO CONCEDIDO]
+        UC10[Ver trazabilidad]
+        UC11[Ver indicadores]
+        UC12[Exportar CSV]
+        UC13[Gestionar usuarios SISO]
+    end
+    C --&gt; UC01
+    C --&gt; UC02
+    C --&gt; UC06
+    C --&gt; UC08
+    C --&gt; UC09
+    C --&gt; UC10
+    C --&gt; UC11
+    C --&gt; UC12
+    C --&gt; UC13
+    S --&gt; UC01
+    S --&gt; UC02
+    S --&gt; UC03
+    S --&gt; UC04
+    S --&gt; UC06
+    S --&gt; UC07
+    S --&gt; UC09
+      </div>
+      <div id="dg2" class="mermaid oculto">
+sequenceDiagram
+    autonumber
+    participant SISO
+    participant FRONT as SPA (frontend)
+    participant API as Server Express
+    participant DB as data/*.json
+    participant PDF as lib/pdf.js + Chrome
+    SISO-&gt;&gt;FRONT: Nuevo registro
+    FRONT-&gt;&gt;FRONT: renderForm() desde el esquema
+    loop Diligenciamiento
+        SISO-&gt;&gt;FRONT: Respuestas SI / NO / NA
+        FRONT-&gt;&gt;FRONT: estadoPermiso(data) detecta NO
+    end
+    SISO-&gt;&gt;FRONT: Guardar
+    FRONT-&gt;&gt;API: POST /api/formatos/:id
+    API-&gt;&gt;DB: db.crear(id, data)
+    DB--&gt;&gt;API: registro con historial
+    API--&gt;&gt;FRONT: 201 Registro
+    SISO-&gt;&gt;FRONT: Generar PDF
+    FRONT-&gt;&gt;API: POST /api/formatos/:id/:rid/pdf
+    API-&gt;&gt;PDF: generarPdf(esquema, data, regId)
+    PDF--&gt;&gt;API: url /pdfs/xxx.pdf
+    API--&gt;&gt;FRONT: url del PDF
+    FRONT-&gt;&gt;FRONT: Abre iframe con el PDF
+      </div>
+      <div id="dg3" class="mermaid oculto">
+erDiagram
+    FORMATO {
+        string id PK
+        string codigo
+        string nombre
+        string version
+        json esquema
+    }
+    REGISTRO {
+        uuid id PK
+        string formatoId FK
+        string estado
+        json data
+        datetime fechaCreacion
+        datetime fechaActualizacion
+    }
+    HISTORIAL {
+        uuid id PK
+        uuid registroId FK
+        datetime fecha
+        string accion
+        string usuario
+        string detalle
+    }
+    USUARIO {
+        uuid id PK
+        string nombre
+        string email
+        string passwordHash
+        string rol
+        boolean activo
+    }
+    FORMATO ||--o{ REGISTRO : define
+    REGISTRO ||--o{ HISTORIAL : audita
+    USUARIO ||--o{ REGISTRO : crea
+      </div>
+      <div id="dg4" class="mermaid oculto">
+flowchart TD
+    A[Login] --&gt; B{¿Rol?}
+    B -- Coordinador SST --&gt; C[Panel completo]
+    C --&gt; C1[Ver TODOS los registros]
+    C --&gt; C2[Aprobar: CONCEDIDO]
+    C --&gt; C3[Cancelar: CANCELADO]
+    C --&gt; C4[Eliminar registros]
+    C --&gt; C5[Ver indicadores globales]
+    C --&gt; C6[Exportar CSV]
+    C --&gt; C7[Gestionar usuarios SISO]
+    B -- SISO --&gt; D[Panel de campo]
+    D --&gt; D1[Crear registros]
+    D --&gt; D2[Ver SOLO sus registros]
+    D --&gt; D3[Generar PDF]
+    D2 --&gt; E{¿Respuesta NO?}
+    E -- Sí --&gt; E1[Estado: NO CONCEDIDO]
+    E -- No --&gt; E2[Propone CONCEDIDO]
+    E1 --&gt; F[Coordinador revisa]
+    E2 --&gt; F
+    classDef coord fill:#0f2a43,color:#fff
+    classDef siso fill:#1d7a46,color:#fff
+    class C,C1,C2,C3,C4,C5,C6,C7 coord
+    class D,D1,D2,D3,E1,E2 siso
+      </div>
+    </div>
+    <p class="nota">Renderizado con Mermaid.js desde CDN. Sin conexión, los diagramas quedan como texto.</p>
+  </div>
+</section>
+
+<!-- ================= ROLES ================= -->
+<section>
+  <div class="wrap">
+    <h2 class="seccion">Roles y permisos</h2>
+    <p class="sub">Dos perfiles con alcances distintos, aplicados en la interfaz y validados en la API.</p>
+    <div class="roles">
+      <div class="rol coord">
+        <h3>Coordinador SST</h3>
+        <ul>
+          <li>Ve todos los registros de todos los formatos</li>
+          <li>Aprueba (CONCEDIDO) y cancela permisos</li>
+          <li>Elimina registros</li>
+          <li>Accede al tablero de indicadores globales</li>
+          <li>Exporta CSV</li>
+          <li>Crea y administra accesos de subalternos SISO</li>
+        </ul>
+      </div>
+      <div class="rol siso">
+        <h3>SISO</h3>
+        <ul>
+          <li>Crea y diligencia registros en campo</li>
+          <li>Ve únicamente los registros que él creó</li>
+          <li>Genera el PDF de sus propios registros</li>
+          <li>Si una respuesta es NO, el estado queda en NO CONCEDIDO</li>
+          <li>Sin acceso a eliminación ni a indicadores globales</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STACK ================= -->
+<section>
+  <div class="wrap">
+    <h2 class="seccion">Stack tecnológico</h2>
+    <p class="sub">Sin framework de frontend y sin base de datos relacional en esta fase.</p>
+    <div class="tabla-scroll">
+      <table>
+        <thead><tr><th>Capa</th><th>Tecnología</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td>Presentación</td><td>HTML5 · CSS3 · JS ES6+</td><td>SPA con manipulación directa del DOM</td></tr>
+          <tr><td>Servidor</td><td>Node.js ≥ 18 · Express 4</td><td>API REST + archivos estáticos</td></tr>
+          <tr><td>PDF</td><td>Puppeteer-core</td><td>Render del HTML del formato a A4 con Chrome del sistema</td></tr>
+          <tr><td>Persistencia</td><td>Archivos JSON</td><td>Un almacén por formato en <code>data/</code>, con historial de trazabilidad</td></tr>
+          <tr><td>UI</td><td>SweetAlert2 · Animate.css</td><td>Diálogos y animaciones servidas de forma local</td></tr>
+          <tr><td>Pruebas</td><td>node:test · puppeteer-core</td><td>Unitarias y end-to-end</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EJECUCIÓN ================= -->
+<section id="ejecucion">
+  <div class="wrap">
+    <h2 class="seccion">Cómo ejecutarla</h2>
+    <p class="sub">Requiere Node.js 18 o superior. La aplicación corre en <b>http://localhost:3200</b>.</p>
+<pre><code><span class="c"># 1. Instalar dependencias (solo la primera vez)</span>
+cd "Proyecto/platform"
+npm install
+
+<span class="c"># 2. Cargar usuarios y registros de demostración</span>
+npm run seed
+
+<span class="c"># 3. Arrancar el servidor</span>
+npm start</code></pre>
+
+    <h3 style="font-size:.98rem;color:var(--azul);margin:22px 0 8px">Cuentas de demostración</h3>
+    <div class="tabla-scroll">
+      <table>
+        <thead><tr><th>Rol</th><th>Correo</th><th>Contraseña</th></tr></thead>
+        <tbody>
+          <tr><td>Coordinador SST</td><td class="cod">coordinador@sstech.co</td><td class="cod">coordinador123</td></tr>
+          <tr><td>SISO</td><td class="cod">siso@sstech.co</td><td class="cod">siso123</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:.98rem;color:var(--azul);margin:22px 0 8px">Pruebas</h3>
+<pre><code><span class="c"># Unitarias (no requieren servidor)</span>
+node --test "tests/unit/*.test.js"
+
+<span class="c"># End-to-end (con el servidor activo en localhost:3200)</span>
+node tests/e2e/validacion.e2e.js</code></pre>
+  </div>
+</section>
+
+<!-- ================= PUBLICACIÓN ================= -->
+<section>
+  <div class="wrap">
+    <h2 class="seccion">Nota sobre la publicación</h2>
+    <div class="aviso">
+      <p><b>Esta página es estática y vive en GitHub Pages.</b> La plataforma con login, base de datos y
+      generación de PDF necesita un servidor Node.js en ejecución, por lo que no puede alojarse en
+      GitHub Pages: para publicarla con functionality completa se requiere un hosting de Node
+      (por ejemplo Render o Railway).</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Proyecto Formulación de Proyectos de Ingeniería — SSTech SaaS © 2026</span>
+    <span>
+      <a href="https://github.com/agutierrezg1995/SSTech" target="_blank" rel="noopener">Repositorio</a> ·
+      Documentación en <code>Proyecto/Documentacion/</code>
+    </span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'loose',
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#eaf2f8',
+      primaryTextColor: '#0f2a43',
+      primaryBorderColor: '#0f2a43',
+      lineColor: '#0f2a43',
+      secondaryColor: '#f0faf2',
+      tertiaryColor: '#fdf0dc'
+    }
+  });
+
+  var gra = ['dg0','dg1','dg2','dg3','dg4'];
+
+  function render(i) {
+    var n = document.getElementById(gra[i]);
+    if (n && !n.dataset.done && n.querySelector('svg')) { n.dataset.done = '1'; return; }
+    if (n && !n.dataset.done) {
+      try { mermaid.run({ nodes: [n] }); n.dataset.done = '1'; } catch (e) { /* texto plano */ }
+    }
+  }
+
+  document.querySelectorAll('#tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var i = Number(b.dataset.i);
+      document.querySelectorAll('.mermaid').forEach(function (d) { d.classList.add('oculto'); });
+      document.getElementById(gra[i]).classList.remove('oculto');
+      document.querySelectorAll('#tabs button').forEach(function (x) { x.classList.remove('activo'); });
+      b.classList.add('activo');
+      render(i);
+    });
+  });
+
+  render(0);
+</script>
+</body>
+</html>

@@ -32,3 +32,6 @@ demo.forEach(u => {
 
 console.log('\nUsuarios demo listos. Contraseñas:');
 demo.forEach(u => console.log(`  ${u.email}  /  ${u.password}`));
+
+/* Siembra registros demo en todos los formatos */
+require('./seed-datos');

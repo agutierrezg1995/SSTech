@@ -19,8 +19,8 @@ tests/
 ## Ejecutar
 
 ```bash
-# unitarias (no requiere servidor)
-node --test tests/unit/
+# unitarias (no requiere servidor) — 41 pruebas, 11 suites
+node --test "tests/unit/*.test.js"
 
 # e2e (requiere servidor en http://localhost:3200)
 cd Proyecto/platform && npm start          # terminal 1
@@ -28,3 +28,6 @@ node tests/e2e/validacion.e2e.js           # terminal 2
 ```
 
 Cuentas demo: `coordinador@sstech.co` / `coordinador123` y `siso@sstech.co` / `siso123`.
+
+> `node --test tests/unit/` falla con `MODULE_NOT_FOUND` en Node ≥ 22. Use el patrón
+> `*.test.js` entre comillas.

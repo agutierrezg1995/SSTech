@@ -62,6 +62,21 @@ app.get('/api/auth/me', auth.requireAuth, (req, res) => {
   res.json({ usuario: req.usuario, token: req.token });
 });
 
+/* ---------- Perfil de usuario (foto y datos personales) ---------- */
+app.patch('/api/auth/perfil', auth.requireAuth, (req, res) => {
+  const body = req.body || {};
+  const { nombre, foto, cargo, cedula, telefono } = body;
+  if (nombre !== undefined && String(nombre).trim() === '') {
+    return res.status(400).json({ error: 'El nombre no puede estar vacío' });
+  }
+  if (foto !== undefined && foto !== '' && /^data:image\//.test(String(foto)) === false) {
+    return res.status(400).json({ error: 'La foto debe ser una imagen en base64 (data:image/...)' });
+  }
+  const r = auth.actualizarPerfil(req.usuario.id, { nombre, foto, cargo, cedula, telefono });
+  if (!r.ok) return res.status(404).json({ error: r.error });
+  res.json({ usuario: r.usuario });
+});
+
 /* ---------- Usuarios (solo Coordinador) ---------- */
 app.get('/api/usuarios', auth.requireAuth, auth.requireRol(['COORDINADOR']), (req, res) => {
   res.json(auth.listarUsuarios());

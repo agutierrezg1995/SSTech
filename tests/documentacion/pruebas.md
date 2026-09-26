@@ -6,8 +6,13 @@ Cubren el motor de validación y las utilidades puras, sin navegador.
 
 ```bash
 # desde la raíz del proyecto (carpeta SSTech Saas)
-node --test tests/unit/
+node --test "tests/unit/*.test.js"
 ```
+
+> **Nota:** `node --test tests/unit/` **no funciona** en Node ≥ 22 (falla con
+> `MODULE_NOT_FOUND` porque la carpeta se interpreta como un módulo). Use el patrón
+> `*.test.js`, entre comillas para que lo resuelva el propio runner de Node.
+> Resultado actual: **41 pruebas, 11 suites, 41 pass, 0 fail**.
 
 - `tests/unit/validacion.test.js` — cobertura de configuración por formato, campos
   obligatorios, autofecha/bloqueo de futuro, tablas, tareas y checklists (incl. `soloSi`),
@@ -33,13 +38,17 @@ node tests/e2e/validacion.e2e.js
 
 Variables opcionales: `SSTECH_URL`, `SSTECH_EMAIL`, `SSTECH_PASSWORD`.
 
-**Casos cubiertos (10):**
+**Casos cubiertos (6 escenarios, 9 aserciones):**
 1. Guardar vacío → se bloquea (no crea registro), resalta errores y muestra toast.
 2. La fecha de diligenciamiento se autollena con HOY.
 3. Llenar datos válidos → guarda correctamente (sin resaltados, toast de éxito).
 4. Fecha futura (2099) → bloqueada con error.
 5. Tabla dinámica vacía → marcada como error.
 6. Editar un campo → limpia su resaltado de error.
+
+**No cubierto por el e2e automático** (se valida de forma manual en la sección 3):
+generación de PDF, trazabilidad, gestión de usuarios, indicadores, exportación CSV y
+permisos por rol.
 
 ## 3. Pruebas manuales
 
@@ -68,7 +77,7 @@ Variables opcionales: `SSTECH_URL`, `SSTECH_EMAIL`, `SSTECH_PASSWORD`.
 
 ```bash
 # todo el paquete unitario
-node --test tests/unit/
+node --test "tests/unit/*.test.js"
 
 # solo validación
 node --test tests/unit/validacion.test.js
@@ -80,9 +89,10 @@ node --test tests/unit/util.test.js
 node tests/e2e/validacion.e2e.js
 ```
 
-## 5. Cobertura verificada en esta sesión
+## 5. Cobertura verificada
 
-- Motor: 10/10 casos e2e + smoke de los **7 formatos** (vacío → errores sin excepción,
+- Unitarias e integración: **41/41** pruebas en verde (`node --test "tests/unit/*.test.js"`).
+- E2E: 6 escenarios / 9 aserciones + smoke de los **7 formatos** (vacío → errores sin excepción,
   rutas de configuración válidas, autofechas).
 - Funcionalidad base: login, apertura de los 7 "Nuevo registro", guardado, PDF y listado
   de registros.

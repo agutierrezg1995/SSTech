@@ -73,11 +73,19 @@ const UI = {
   },
 
   cerrarSesion() {
-    try { fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('sstech_token') || '') } }); } catch (e) {}
-    localStorage.removeItem('sstech_token');
-    localStorage.removeItem('sstech_usuario');
-    App.usuario = null;
-    this.mostrarLogin();
+    this.confirmarSwal({
+      icon: 'question',
+      title: 'Cerrar sesión',
+      text: '¿Deseas salir de la plataforma?',
+      confirmar: 'Sí, salir'
+    }).then(ok => {
+      if (!ok.isConfirmed) return;
+      try { fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('sstech_token') || '') } }); } catch (e) {}
+      localStorage.removeItem('sstech_token');
+      localStorage.removeItem('sstech_usuario');
+      App.usuario = null;
+      this.mostrarLogin();
+    });
   },
 
   async restaurarSesion() {
@@ -99,23 +107,32 @@ const UI = {
 
   aplicarRol() {
     const esC = this.esCoordinador();
+    const u = App.usuario || {};
     const top = $('topbar-usuario');
     top.innerHTML = `
-      <div class="avatar" style="--color:${esC ? '#1d7a46' : '#1d5b8c'}">${esc((App.usuario.nombre || 'U')[0])}</div>
+      ${avatarHTML(u, 38)}
       <div>
-        <div><b>${esc(App.usuario.nombre)}</b> <span class="rol-pill rol-${App.usuario.rol}">${App.usuario.rol}</span></div>
-        <div class="muted smaller">${esc(App.usuario.email)}</div>
+        <div><b>${esc(u.nombre || 'Usuarios')}</b> <span class="rol-pill rol-${u.rol}">${u.rol}</span></div>
+        <div class="muted smaller">${esc(u.email || '')}</div>
       </div>`;
     // sidebar
     document.querySelectorAll('.nav-item').forEach(n => {
       n.style.display = '';
     });
-    $('sidebar-footer').innerHTML = esC
-      ? `Rol: Coordinador SST · Acceso total<br>SSTech SaaS © 2026`
-      : `Rol: SISO · Módulo de campo<br>SSTech SaaS © 2026`;
+    $('sidebar-footer').innerHTML = `
+      <div class="sidebar-usuario" onclick="UI.abrirPerfil()" title="Abrir configuración de perfil">
+        ${avatarHTML(u, 42)}
+        <div class="su-info">
+          <b>${esc(u.nombre || '')} <span class="rol-pill rol-${u.rol}">${u.rol}</span></b>
+          <div class="su-mail">${esc(u.cargo || u.email || '')}</div>
+        </div>
+      </div>
+      <div class="sidebar-copy">${esC ? 'Coordinador SST · Acceso total' : 'SISO · Módulo de campo'}<br>SSTech SaaS © 2026</div>`;
     // botones de rol
-    $('btn-admin').classList.toggle('hidden', !esC);
+    const btnAdmin = $('btn-admin');
+    if (btnAdmin) btnAdmin.classList.toggle('hidden', !esC);
     $('btn-indicadores').classList.toggle('hidden', !esC);
+    $('sidebar-admin').classList.toggle('hidden', !esC);
   },
 
   /* ---------- Inicialización ---------- */
@@ -397,7 +414,14 @@ const UI = {
 
   async eliminar() {
     if (!App.registro || !this.esCoordinador()) return;
-    if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+    const ok = await this.confirmarSwal({
+      icon: 'warning',
+      title: '¿Eliminar este registro?',
+      text: 'Esta acción no se puede deshacer. El registro se eliminará permanentemente.',
+      confirmar: 'Sí, eliminar',
+      colorPeligro: true
+    });
+    if (!ok.isConfirmed) return;
     this.spinner(true);
     try {
       await api(`/api/formatos/${App.formato.id}/${App.registro.id}`, { method: 'DELETE' });
@@ -413,7 +437,14 @@ const UI = {
   },
 
   async eliminarDirecto(id) {
-    if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+    const ok = await this.confirmarSwal({
+      icon: 'warning',
+      title: '¿Eliminar este registro?',
+      text: 'Esta acción no se puede deshacer. El registro se eliminará permanentemente.',
+      confirmar: 'Sí, eliminar',
+      colorPeligro: true
+    });
+    if (!ok.isConfirmed) return;
     this.spinner(true);
     try {
       await api(`/api/formatos/${App.formato.id}/${id}`, { method: 'DELETE' });
@@ -539,16 +570,15 @@ const UI = {
     try {
       const usuarios = await api('/api/usuarios');
       const html = `
-        <div class="admin-titulo">Nuevo usuario</div>
+        <div class="admin-titulo">Nuevo subalterno — SISO</div>
         <div class="admin-form">
           <input type="text" id="nu-nombre" placeholder="Nombre completo">
           <input type="email" id="nu-email" placeholder="correo@sstech.co">
           <input type="password" id="nu-pass" placeholder="Contraseña">
-          <select id="nu-rol">
-            <option value="SISO">SISO</option>
-            <option value="COORDINADOR">Coordinador</option>
-          </select>
-          <button class="btn btn-primary" onclick="UI.crearUsuario()">＋ Crear</button>
+          <button class="btn btn-primary" onclick="UI.crearUsuario()">＋ Crear SISO</button>
+        </div>
+        <div class="muted smaller" style="margin-top:6px">
+          El nuevo SISO podrá iniciar sesión con ese correo y contraseña.
         </div>
         <div class="admin-titulo" style="margin-top:18px">Usuarios existentes</div>
         <table class="crud"><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th></tr></thead><tbody>
@@ -567,18 +597,168 @@ const UI = {
     const nombre = $('nu-nombre').value.trim();
     const email = $('nu-email').value.trim();
     const password = $('nu-pass').value;
-    const rol = $('nu-rol').value;
+    const rol = 'SISO';
     if (!nombre || !email || !password) { this.toast('Complete todos los campos', true); return; }
     this.spinner(true);
     try {
-      await api('/api/usuarios', { method: 'POST', body: JSON.stringify({ nombre, email, password, rol }) });
-      this.toast('Usuario creado');
+      const creado = await api('/api/usuarios', { method: 'POST', body: JSON.stringify({ nombre, email, password, rol }) });
+      this.toast(`SISO ${creado.nombre || ''} creado. Puede ingresar con ${creado.email || email}`);
+      $('nu-nombre').value = '';
+      $('nu-email').value = '';
+      $('nu-pass').value = '';
       await this.cargarUsuarios();
     } catch (e) {
       this.toast('Error al crear usuario: ' + e.message, true);
     } finally {
       this.spinner(false);
     }
+  },
+
+  /* ---------- Perfil de usuario (foto y datos) ---------- */
+  abrirPerfil() {
+    const u = App.usuario || {};
+    $('perfil-sub').textContent = u.email ? 'Cuenta: ' + u.email : '';
+    $('perfil-body').innerHTML = this.renderPerfilHTML(u);
+    $('modalPerfil').classList.remove('hidden');
+    $('modalPerfil').querySelector('.modal-box').classList.add('animate__animated', 'animate__fadeInUp');
+  },
+
+  cerrarPerfil() { $('modalPerfil').classList.add('hidden'); },
+
+  renderPerfilHTML(u) {
+    return `
+      <div class="perfil-wrap">
+        <div class="perfil-grid">
+          <div class="perfil-foto-col">
+            <div class="perfil-avatar" id="perfil-avatar">${avatarFotoGrande(u)}</div>
+            <input type="file" id="perfil-foto-input" accept="image/png,image/jpeg" hidden
+              onchange="UI.cargarFoto(this)">
+            <div class="perfil-foto-botones">
+              <button class="btn btn-primary sm" onclick="$('perfil-foto-input').click()">📷 Subir foto</button>
+              <button class="btn btn-outline sm" onclick="UI.quitarFoto()">🗑 Quitar</button>
+            </div>
+            <div class="muted smaller" style="margin-top:6px">PNG o JPG · se redimensiona automáticamente</div>
+          </div>
+          <div class="perfil-fields">
+            <div class="campo">
+              <label for="pf-nombre">Nombre completo *</label>
+              <input type="text" id="pf-nombre" value="${esc(u.nombre || '')}">
+            </div>
+            <div class="campo">
+              <label for="pf-cargo">Cargo</label>
+              <input type="text" id="pf-cargo" value="${esc(u.cargo || '')}" placeholder="Ej. Coordinador SST">
+            </div>
+            <div class="campo">
+              <label for="pf-cedula">Cédula</label>
+              <input type="text" id="pf-cedula" value="${esc(u.cedula || '')}" placeholder="Número de identificación">
+            </div>
+            <div class="campo">
+              <label for="pf-telefono">Teléfono</label>
+              <input type="text" id="pf-telefono" value="${esc(u.telefono || '')}" placeholder="+57 300 000 0000">
+            </div>
+            <div class="campo">
+              <label>Correo electrónico</label>
+              <input type="email" value="${esc(u.email || '')}" disabled title="No se puede modificar">
+            </div>
+            <div class="campo">
+              <label>Rol</label>
+              <div><span class="rol-pill rol-${u.rol}">${u.rol}</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer perfil-footer">
+          <button class="btn btn-primary" onclick="UI.guardarPerfil()">💾 Guardar cambios</button>
+          <button class="btn btn-outline" onclick="UI.cerrarPerfil()">Cancelar</button>
+        </div>
+      </div>`;
+  },
+
+  cargarFoto(input) {
+    const file = input && input.files && input.files[0];
+    if (!file) return;
+    if (!/^image\/(png|jpe?g)$/.test(file.type)) {
+      this.toast('Formato no permitido. Usa PNG o JPG.', true);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 512;
+        const escala = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.max(1, Math.round(img.width * escala));
+        const h = Math.max(1, Math.round(img.height * escala));
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        this._fotoNueva = cv.toDataURL('image/jpeg', 0.85);
+        this.pintarAvatarPerfil();
+        this.toast('Foto lista. Haz clic en "Guardar cambios".');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  },
+
+  quitarFoto() {
+    this._fotoNueva = '';
+    this.pintarAvatarPerfil();
+  },
+
+  pintarAvatarPerfil() {
+    const el = $('perfil-avatar');
+    if (!el) return;
+    const foto = this._fotoNueva !== undefined ? this._fotoNueva : (App.usuario.foto || '');
+    el.innerHTML = foto ? avatarFotoGrande(foto, true) : avatarInicial(App.usuario, 96);
+  },
+
+  async guardarPerfil() {
+    const nombre = $('pf-nombre').value.trim();
+    if (!nombre) { this.toast('El nombre no puede estar vacío', true); return; }
+    const foto = this._fotoNueva !== undefined ? this._fotoNueva : (App.usuario.foto || '');
+    this.spinner(true);
+    try {
+      const r = await api('/api/auth/perfil', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          nombre,
+          foto,
+          cargo: $('pf-cargo').value.trim(),
+          cedula: $('pf-cedula').value.trim(),
+          telefono: $('pf-telefono').value.trim()
+        })
+      });
+      App.usuario = r.usuario;
+      localStorage.setItem('sstech_usuario', JSON.stringify(r.usuario));
+      this._fotoNueva = undefined;
+      this.aplicarRol();
+      this.cerrarPerfil();
+      this.toast('Perfil actualizado');
+    } catch (e) {
+      this.toast('Error al guardar perfil: ' + e.message, true);
+    } finally {
+      this.spinner(false);
+    }
+  },
+
+  /* ---------- Diálogo profesional (SweetAlert2) ---------- */
+  confirmarSwal(opciones) {
+    const o = opciones || {};
+    return Swal.fire({
+      title: o.title || '¿Estás seguro?',
+      text: o.text || '',
+      icon: o.icon || 'warning',
+      showCancelButton: true,
+      reverseButtons: true,
+      confirmButtonText: o.confirmar || 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: o.colorPeligro ? '#b02a2a' : '#1d7a46',
+      cancelButtonColor: '#94a3b8',
+      buttonsStyling: true,
+      customClass: {
+        popup: 'animate__animated animate__zoomIn'
+      }
+    });
   },
 
   /* ---------- Exportar CSV registros ---------- */
@@ -624,6 +804,29 @@ const UI = {
 
 function descFormat(s) {
   return (s && s.nombre) ? s.nombre : '';
+}
+
+/* Avatar (con foto del perfil si existe) */
+function avatarInicial(u, px) {
+  const inicial = esc(String((u && u.nombre) || 'U')[0].toUpperCase());
+  const color = u && u.rol === 'COORDINADOR' ? '#1d7a46' : '#1d5b8c';
+  return `<div class="avatar" style="--color:${color}">${inicial}</div>`;
+}
+
+function avatarFotoGrande(u, esDataUrl) {
+  const foto = esDataUrl ? u : ((u && u.foto) || '');
+  if (foto) {
+    return `<div class="avatar avatar-foto" style="background-image:url('${foto}')"></div>`;
+  }
+  return avatarInicial(u, 96);
+}
+
+function avatarHTML(u, px) {
+  const foto = (u && u.foto) || '';
+  if (foto) {
+    return `<div class="avatar avatar-foto" style="background-image:url('${foto}')"></div>`;
+  }
+  return avatarInicial(u, px);
 }
 
 const $ = id => document.getElementById(id);
