@@ -10,7 +10,13 @@ Permite crear, editar, aprobar y generar PDF de registros con roles (Coordinador
 | **URL pública**              | **https://agutierrezg1995.github.io/SSTech/**                 |
 | Carpeta fuente de Pages      | `docs/` (rama `main` → *Deploy from a branch*)                |
 | Archivo raíz del sitio       | `docs/index.html`                                             |
+| Redirección en la raíz       | `index.html` (redirige a `/SSTech/docs/`)                     |
 | Configuración                | Settings → Pages → Source: `main` / `/docs`                   |
+
+El sitio se sirve desde `docs/`. Como Pages está configurado con la raíz del repositorio,
+el archivo `index.html` de la raíz redirige a `/SSTech/docs/`, de modo que la URL pública
+muestra el sitio completo. Si en Settings → Pages se cambia el origen a `main` / `/docs`,
+la redirección deja de ser necesaria y puede eliminarse.
 
 Sitio **estático** (un solo archivo, sin build): presentación del proyecto, diagramas
 Mermaid, stack técnico, los 7 formatos digitalizados con link a su PDF original, comandos
